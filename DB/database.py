@@ -58,5 +58,35 @@ class Ticket:
         self.conn.close()
 
 
+class Achievements:
+    
+    def __init__(self):
+        self.conn = sqlite3.connect('DB/HR.db', check_same_thread=False)
+        self.cursor = self.conn.cursor()
+    
+    def check_code(self, code):
+        self.cursor.execute(f'SELECT description FROM achievements WHERE code=?', (code,))
+        return self.cursor.fetchone()
+
+    def update_activate(self, id, code):
+        self.cursor.execute("SELECT id_list FROM achievements WHERE code=?", (code,))
+        result = self.cursor.fetchone()
+        if result:
+            my_list = eval(result[0]) # получаем список из строки
+            my_list.append(id)
+            self.cursor.execute("UPDATE achievements SET id_list=? WHERE code=?", (str(my_list), code))
+        else:
+            self.cursor.execute("INSERT INTO achievements (code, id_list) VALUES (?, ?)", (code, str([id])))
+        self.conn.commit()
+    
+    def received(self, id):
+        self.cursor.execute("SELECT * FROM achievements")
+        return self.cursor.fetchall()
+
+    def close(self):
+        self.conn.close()
+    
+
+
 if __name__ == '__main__':
     pass

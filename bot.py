@@ -4,7 +4,9 @@ import DB.database
 import re
 import content.TG as tg
 from telebot import types
-
+import function
+import os
+import random
 
 config = configparser.ConfigParser()
 config.read("settings.ini")
@@ -35,6 +37,18 @@ def start(message):
     else:
         bot.send_message(message.chat.id, 'Нет доступа❗')
 
+
+@bot.message_handler(func = lambda m : m.text == '✔️Мои достижения')
+def my_achievements(message):
+    id = message.chat.id
+    ac = DB.database.Achievements()
+    rows = ac.received(id)
+    ac.close()
+    for row in rows:
+        if id in row[2]:
+            print(f'✅ {row[1]}')
+        else:
+            pass
 
 @bot.message_handler(func = lambda m : m.text == '👤Задать вопрос')
 def askQuestion(message):
@@ -86,3 +100,30 @@ def reply_to_message_handler(message):
         bot.send_message(chatid, f'⚠️Вам пришел ответ!\n{message.text}')
     except:
         pass
+
+
+@bot.message_handler(content_types=['photo'])
+def handle_photo(message):
+    photo = message.photo[-1]
+    file_info = bot.get_file(photo.file_id)
+    downloaded_file = bot.download_file(file_info.file_path)
+    photo = f"img/{photo.file_id}.jpg"
+    with open(photo, 'wb') as new_file:
+        new_file.write(downloaded_file)
+    code = function.read_qr_code(photo)
+    if code:
+        ac = DB.database.Achievements()
+        description = ac.check_code(code)
+        if description:
+            ac.update_activate(message.from_user.id, code)
+            mes = random.choice(['Продолжай в том же духе', 'Всё получится!', 'Молодец!'])
+            bot.send_message(message.chat.id, f'Новое достижение! \n{description[0]}\nПоздравляю!\n{mes}')
+            ac.close()
+            os.remove(photo)
+        else:
+            bot.send_message(message.chat.id, 'Такого кода не существует!')
+            ac.close()
+            os.remove(photo)
+    else:
+        bot.send_message(message.chat.id, 'Код отсуствует на картинке!')
+        os.remove(photo)
