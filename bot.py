@@ -40,15 +40,18 @@ def start(message):
 
 @bot.message_handler(func = lambda m : m.text == '✔️Мои достижения')
 def my_achievements(message):
-    id = message.chat.id
+    id = str(message.chat.id)
     ac = DB.database.Achievements()
     rows = ac.received(id)
     ac.close()
+    text = ""
     for row in rows:
         if id in row[2]:
-            print(f'✅ {row[1]}')
+            text += f'✅ {row[1]} - {row[3]}' + "\n"
         else:
-            pass
+            text += f'❌ {row[1]} - {row[3]}' + "\n"
+    bot.send_message(int(id), text)
+            
 
 @bot.message_handler(func = lambda m : m.text == '👤Задать вопрос')
 def askQuestion(message):
