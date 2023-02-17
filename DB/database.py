@@ -1,6 +1,7 @@
 import sqlite3
 import random
 
+
 class Database:
     
     def __init__(self):
@@ -86,7 +87,39 @@ class Achievements:
     def close(self):
         self.conn.close()
     
+class Callendar():
+    
+    def __init__(self):
+        self.conn = sqlite3.connect('DB/HR.db', check_same_thread=False)
+        self.cursor = self.conn.cursor()
+    
+    def create_date(self, date, descriptons, place):
+        self.cursor.execute("INSERT INTO сalendar VALUES (?, ?, ?)", (date, descriptons, place, []))
+        self.conn.commit()
 
+    def get_date(self):
+        self.cursor.execute("SELECT * FROM сalendar")
+        return self.cursor.fetchall()
+
+    # delet - 1 yes, 0 - no
+    def update_activate(self, id, number, delet):
+        self.cursor.execute("SELECT sub FROM сalendar WHERE number=?", (number,))
+        result = self.cursor.fetchone()
+        if result:
+            my_list = eval(result[0]) # получаем список из строки
+            if delet == 0:
+                my_list.append(id)
+                self.cursor.execute("UPDATE сalendar SET sub=? WHERE number=?", (str(my_list), number))
+            else:
+                my_list.remove(number)
+                self.cursor.execute("UPDATE сalendar SET sub=? WHERE number=?", (str(my_list), number))
+        else:
+            self.cursor.execute("INSERT INTO сalendar (number, sub) VALUES (?, ?)", (number, str([id])))
+        self.conn.commit()
+
+
+    def close(self):
+        self.conn.close()
 
 if __name__ == '__main__':
     pass

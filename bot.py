@@ -8,6 +8,7 @@ import function
 import os
 import random
 
+
 config = configparser.ConfigParser()
 config.read("settings.ini")
 tokenBot = config["bot"]["bot_token"]
@@ -32,7 +33,7 @@ def keyboards_create(ListNameBTN, NumberColumns=2):
 def start(message):
     name = db.check_human(message.chat.id)
     if name is not None:
-        bot.send_message(message.chat.id, f'Привет, {name}!\n{tg.welcome_message}',
+        bot.send_message(message.chat.id, f'Привет, {name[0]}!\n{tg.welcome_message}',
             reply_markup=keyboards_create(tg.welcome_keyboard))
     else:
         bot.send_message(message.chat.id, 'Нет доступа❗')
@@ -52,6 +53,41 @@ def my_achievements(message):
             text += f'❌ {row[1]} - {row[3]}' + "\n"
     bot.send_message(int(id), text)
             
+
+@bot.message_handler(func = lambda m : m.text == '📅Календарь событий')
+def сalendar(message):
+    kl = DB.database.Callendar()
+    event = kl.get_date()
+    kl.close()
+    btn = ['Меню']
+    for i in event:
+        btn.append(str(i[0]))
+    msg = bot.send_message(message.chat.id, 'Держи календарь на текущий месяц!\nВыбери день, \
+чтобы узнать подробнее о событии:', reply_markup=keyboards_create(btn))
+    bot.register_next_step_handler(msg, calendarday, btn, event)
+
+
+def calendarday(message, btn, event):
+    if message.text == 'Меню':
+        start(message)
+    elif str(message.text) in btn:
+        subscribe = types.InlineKeyboardButton("🔔Подписаться на событие", callback_data="subscribeivent")
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.add(subscribe)
+        bot.send_message(message.chat.id, f'Событие - {event[0][1]} \n📌{event[0][2]}', reply_markup=keyboard)
+        start(message)
+    else:
+        bot.send_message(message.chat.id, f'Событий на эту дату нет!', reply_markup=types.ReplyKeyboardRemove())
+        start(message)
+
+@bot.message_handler(func = lambda m : m.text == '📂Навигатор')
+def navigator(message):
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton(text='Полезные материалы', callback_data='Usefulmaterials'),
+           types.InlineKeyboardButton(text='Телефонный справочник', callback_data='phonebook'),
+           types.InlineKeyboardButton(text='Меню', callback_data='menu'),)
+    bot.send_message(message.chat.id, 'Навигатор:', reply_markup=markup)
+
 
 @bot.message_handler(func = lambda m : m.text == '👤Задать вопрос')
 def askQuestion(message):
@@ -80,15 +116,42 @@ def send_Question(message):
     reply_markup=keyboard)
     bot.send_message(message.chat.id, 'Ваше обращение отправлено, дождитесь ответа!')
 
-
+""" доработать """
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
     data = call.data
+    
     if data == 'takeTicket':
         new_markup = types.InlineKeyboardMarkup()
         new_button = types.InlineKeyboardButton(text='✅Взято на обработку', callback_data='takeTicket')
         new_markup.add(new_button)
         bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=new_markup)
+    
+    elif data == 'Usefulmaterials':
+        button = types.InlineKeyboardButton(text="Открыть ссылку", url="https://www.example.com")
+        Usefulmaterials = types.InlineKeyboardMarkup()
+        Usefulmaterials.add(button)
+        bot.send_message(call.message.chat_id, "Нажмите кнопку, чтобы открыть ссылку", reply_markup=Usefulmaterials)
+    
+    # дописать подписку
+    elif data == 'subscribeivent':
+        new_markup = types.InlineKeyboardMarkup()
+        new_button = types.InlineKeyboardButton(text='🔕 Отписаться', callback_data='unsubscribeivent')
+        new_markup.add(new_button)
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=new_markup)
+
+    elif data == 'unsubscribeivent':
+        new_markup = types.InlineKeyboardMarkup()
+        new_button = types.InlineKeyboardButton(text='🔔 Подписаться на событие', callback_data='subscribeivent')
+        new_markup.add(new_button)
+        #cl = DB.database.Callendar()
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=new_markup)
+    
+    elif data == 'phonebook':
+        pass
+    
+    elif data == 'menu':
+        start(call.message)
 
 
 @bot.message_handler(func=lambda message: message.reply_to_message is not None)
