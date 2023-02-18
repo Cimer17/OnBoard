@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 from pyzbar.pyzbar import decode
 import makevcard
+from docxtpl import DocxTemplate
+import datetime
+import DB.database
 
 
 def read_qr_code(image_path):
@@ -32,6 +35,34 @@ def get_contact():
 # загрузка контактов
 def load_conatct(contacts, id):
     makevcard.main(contacts, id)
+
+def get_data(id):
+    doc = DocxTemplate("references/НДФЛ.docx")
+    now = datetime.datetime.now()
+    current_year = now.year
+    current_month = now.month
+    current_day = now.day
+    people = DB.database.People()
+    data = people.check('name', id)
+    li = []
+    for i in data.split():
+        if data.split()[0] == i:
+            li.append(i)
+        else:
+            li.append(i[0])
+    fio = '.'.join(li).replace('.', ' ', 1)
+    jobtitle = people.check('JOBTITLE', id)
+    year = now.year
+    date  = f"{current_day}.{current_month}.{current_year} г."
+    dict = { 'fio' : fio,
+    'jobtitle' : jobtitle,
+    'year' : year,
+    'date' : date,
+    'fiotitle' : fio,
+    }
+    doc.render(dict)
+    doc.save(f"references/save/{id}.docx")
+
 
 if __name__ == '__main__':
     get_calendar('February', '2')

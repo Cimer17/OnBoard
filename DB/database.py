@@ -26,7 +26,7 @@ class People(Database):
         self.conn = sqlite3.connect('DB/HR.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.id = id  
-        self.name = name
+        self.name = name.title()
         self.subdivision = subdivision
         self.JOBTITLE = JOBTITLE
         self.department = department

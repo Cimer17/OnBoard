@@ -26,14 +26,22 @@
       label {
         display: block;
         margin-bottom: 10px;
+        font-size: 16px;
+        font-weight: bold;
       }
 
-      input[type="text"] {
+      input[type="text"],
+      select {
         padding: 10px;
         font-size: 16px;
         border: 1px solid #ccc;
         border-radius: 5px;
         width: 100%;
+        margin-bottom: 20px;
+      }
+
+      select {
+        height: 40px;
       }
 
       button[type="submit"] {
@@ -52,16 +60,37 @@
     <h1>Выдать доступ к Telegram</h1>
     <form action="/grant-access" method="POST">
       <label for="chat_id">ID пользователя:</label>
-      <input type="text" id="chat_id" name="chat_id" required>
-      <label for="name">Имя и Фамилия:</label>
+      <input type="text" id="chat_id" name="chat_id" pattern="\d+" title="Введите только цифры!" required>
+      <label for="name">ФИО:</label>
       <input type="text" id="name" name="name" required>
-      <label for="subdivision">Подразделение:</label>
-      <input type="text" id="subdivision" name="subdivision" required>
+      <label for="subdivision">Управление:</label>
+      <select id="subdivision" name="subdivision">
+        <option value="value1">Управление регионального взаимодействия</option>
+        <option value="value2">Управление делами, государственной службы и правового обеспечения</option>
+        <option value="value3">Управление молодежных проектов и программ</option>
+        <option value="value4">Финансово-экономическое управление</option>
+      </select>
       <label for="JOBTITLE">Должность:</label>
-      <input type="text" id="JOBTITLE" name="JOBTITLE" required>
+      <input type="text" id="JOBTITLE" name="JOBTITLE" value="Стажер" required>
       <label for="department">Отдел:</label>
       <input type="text" id="department" name="department" required>
       <button type="submit">Выдать!</button>
     </form>
-  </body>
+    
+    <div id="response" style="display: none;">
+      Спасибо за отправку формы!
+    </div>
+
+    <script>
+      var form = document.getElementById('/grant-access');
+      var response = document.getElementById('response');
+
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        response.style.display = 'block';
+        form.reset();
+      });
+    </script>
+  
+</body>
 </html>

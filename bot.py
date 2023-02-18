@@ -85,6 +85,7 @@ def navigator(message):
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton(text='Полезные материалы', callback_data='Usefulmaterials'),
            types.InlineKeyboardButton(text='Телефонный справочник', callback_data='phonebook'),
+           types.InlineKeyboardButton(text='Справки', callback_data='references'),
            types.InlineKeyboardButton(text='Меню', callback_data='menu'),)
     bot.send_message(message.chat.id, 'Навигатор:', reply_markup=markup)
 
@@ -168,6 +169,21 @@ def callback_handler(call):
         with open(f'contact/{call.message.chat.id}.vcf', 'rb') as f:
             bot.send_document(call.message.chat.id, document=f)
     
+    elif data == 'references':
+        new_markup = types.InlineKeyboardMarkup()
+        new_button = types.InlineKeyboardButton(text='2НДФЛ', callback_data='ndfl')
+        new_markup.add(new_button)
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=new_markup)
+    
+    elif data == 'ndfl':
+        function.get_data(call.message.chat.id)
+        new_markup = types.InlineKeyboardMarkup()
+        new_button = types.InlineKeyboardButton(text='✅Готово', callback_data='delete')
+        new_markup.add(new_button)
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=new_markup)
+        with open(f'references/save/{call.message.chat.id}.docx', 'rb') as f:
+            bot.send_document(call.message.chat.id, document=f)
+
     elif data == 'menu':
         start(call.message)
 

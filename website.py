@@ -18,7 +18,6 @@ def hr():
 def access():
     return render_template('access.html')
 
-
 # API
 @app.route('/grant-access', methods=['POST'])
 def grant_access():
@@ -31,9 +30,7 @@ def grant_access():
     db = DB.database.People()
     db.create(chat_id, name, subdivision, JOBTITLE, department)
     db.close()
-    return f'Доступ выдан {chat_id}!'
-
-
+    return render_template('accessright.html')
 
 @app.route('/submit', methods=['POST'])
 def submit_handler():
