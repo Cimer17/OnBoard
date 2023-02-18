@@ -3,23 +3,20 @@ import configparser
 import DB.database
 import re
 import content.TG as tg
-from telebot import types
 import function
 import os
 import random
-
+from telebot import types
 
 config = configparser.ConfigParser()
 config.read("settings.ini")
 tokenBot = config["bot"]["bot_token"]
-
 
 db = DB.database.Database()
 bot = telebot.TeleBot(tokenBot)
 
 
 id_support = '-666276498'  # тут автоматический чат с главным и поддержкой
-
 
 def keyboards_create(ListNameBTN, NumberColumns=2):
     keyboards = types.ReplyKeyboardMarkup(
@@ -44,14 +41,17 @@ def my_achievements(message):
     id = str(message.chat.id)
     ac = DB.database.Achievements()
     rows = ac.received(id)
-    ac.close()
-    text = ""
-    for row in rows:
-        if id in row[2]:
-            text += f'✅ {row[1]} - {row[3]}' + "\n"
-        else:
-            text += f'❌ {row[1]} - {row[3]}' + "\n"
-    bot.send_message(int(id), text)
+    if rows:
+        ac.close()
+        text = ""
+        for row in rows:
+            if id in row[2]:
+                text += f'✅ {row[1]} - {row[3]}' + "\n"
+            else:
+                text += f'❌ {row[1]} - {row[3]}' + "\n"
+        bot.send_message(int(id), text)
+    else:
+        bot.send_message(message.chat.id, 'Вы всё прошли!')
             
 
 @bot.message_handler(func = lambda m : m.text == '📅Календарь событий')
@@ -148,7 +148,25 @@ def callback_handler(call):
         bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=new_markup)
     
     elif data == 'phonebook':
-        pass
+        new_markup = types.InlineKeyboardMarkup()
+        new_button = types.InlineKeyboardButton(text='💾 Сохранить контакты', callback_data='savecontact')
+        new_markup.add(new_button)
+        telephone = function.get_contact()['message']
+        bot.send_message(call.message.chat.id, telephone, reply_markup=new_markup)
+    
+    elif data == 'savecontact':
+        data = function.get_contact()
+        function.load_conatct(data['phonebook'], call.message.chat.id)
+        new_markup = types.InlineKeyboardMarkup()
+        new_button = types.InlineKeyboardButton(text='Отправляю файл...', callback_data='delete')
+        new_markup.add(new_button)
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=new_markup)
+        new_markup = types.InlineKeyboardMarkup()
+        new_button = types.InlineKeyboardButton(text='✅Готово', callback_data='delete')
+        new_markup.add(new_button)
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=new_markup)
+        with open(f'contact/{call.message.chat.id}.vcf', 'rb') as f:
+            bot.send_document(call.message.chat.id, document=f)
     
     elif data == 'menu':
         start(call.message)

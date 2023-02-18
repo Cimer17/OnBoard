@@ -31,7 +31,7 @@ class People(Database):
         self.JOBTITLE = JOBTITLE
         self.department = department
         self.new = 0
-        self.cursor.execute('INSERT INTO users VALUES (?, ?, ?, ?, ?, 0);', [id, name, subdivision, JOBTITLE, department])
+        self.cursor.execute('INSERT INTO users VALUES (?, ?, ?, ?, ?, 0, 1);', [id, name, subdivision, JOBTITLE, department])
         self.conn.commit()
 
     def check(self, param : str, id): # получаем нужный параметр
@@ -81,7 +81,9 @@ class Achievements:
         self.conn.commit()
     
     def received(self, id):
-        self.cursor.execute("SELECT * FROM achievements")
+        pl = People()
+        state = str(pl.check('state', id))
+        self.cursor.execute("SELECT * FROM achievements WHERE state=?", (state))
         return self.cursor.fetchall()
 
     def close(self):

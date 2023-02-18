@@ -1,8 +1,7 @@
 import cv2
-import pytesseract
 import numpy as np
 from pyzbar.pyzbar import decode
-
+import makevcard
 
 def read_qr_code(image_path):
     image = cv2.imread(image_path)
@@ -15,17 +14,24 @@ def read_qr_code(image_path):
 
 
 def get_calendar(month, number):
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-    img = cv2.imread(f'content/calendar/{month}.png')
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    gray = cv2.addWeighted(gray, 1.5, gray, -0.5, 0)
-    text = pytesseract.image_to_string(gray, config='--psm 6')
-    if number in text:
-        print(f"Число {number} найдено на изображении!")
-    else:
-        print(f"Число {number} не найдено на изображении.")
+   pass
 
+# получение контактов
+def get_contact():
+    number = '+792091552140 - Отдел кадров\n+79190011976 - Директор \n+79134953224 - Столовая'
+    telephone = f'📞Вот полезные номера телефонов:\n' + number
+    phonebook = {}
+    for line in telephone.split('\n'):
+        if line.count(' - ') == 1:
+            phone, name = line.split(' - ')
+            phonebook[phone] = name
+    return {'message' : telephone,
+    'phonebook' : phonebook
+    }
+
+# загрузка контактов
+def load_conatct(contacts, id):
+    makevcard.main(contacts, id)
 
 if __name__ == '__main__':
     get_calendar('February', '2')
