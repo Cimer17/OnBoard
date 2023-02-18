@@ -1,0 +1,24 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .box1 {
+    position: absolute; /* задаем абсолютное позиционирование для элемента */
+    top: 50px; /* отступ сверху */
+    left: 50px; /* отступ слева */
+    width: 200px;
+    height: 100px;
+    background-color: blue;
+    color: white;
+    padding: 10px;
+  }
+  .box2 {
+    position: relative; /* задаем абсолютное позиционирование для элемента */
+    top: 150px; /* отступ сверху */
+    right: 150px; /* отступ слева */
+    bottom: 200px;
+    left: 100px;
+    height: 2000px;
+  }

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Application</title>
+            <div class="first__list">
+                <h1>Для админа</h1>
+            </div>
+            <style>
+                p {
+                 color: rgb(62, 23, 218);
+                 font-size: 2em;
+              }
+            </style>
+    
+    </head>
+    <body>
+        <head>
+            <form action="/submit" method="post">
+
+                <fieldset>
+                    <link rel="stylesheet" type="text/css" href="application.css">
+    
+                    <div class="box1">
+                        <input type="radio" id="page1" name="choice" value="Новые заявки" />
+                        <label for="page1">Новые заявки</label>
+                    
+                    </div>
+                    <div class="box2">
+                        <input type="radio" id="tab2" name="tabs">
+                        <label for="tab2">Обратная связь</label>
+                    </div>
+                    <div class="box3">
+                        <input type="radio" id="tab3" name="tabs">
+                        <label for="tab3">Этапы</label>
+                    </div>
+                    <div class="box4">
+                        <input type="radio" id="tab4" name="tabs">
+                        <label for="tab4">Отчет</label>
+                    </div>
+
+                        <!-- <div>
+                        Содержимое вкладки 1
+                        <p>Раздел обработки заявок</p>
+                        </div>
+
+                        <div>
+                        Содержимое вкладки 2
+                        <p>Раздел обработной связи</p>
+                        </div>
+
+                        <div>
+                        Содержимое вкладки 3
+                        <p></p>
+                        </div>-->
+                    <div>
+                        <input type="submit" value="Submit">
+                    </div>
+                </fieldset>
+            </form>
+
+        </head>
+    </body>
+</html>
