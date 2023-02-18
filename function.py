@@ -1,10 +1,21 @@
+from PIL import Image, ImageDraw, ImageFont
+from docxtpl import DocxTemplate
+from pyzbar.pyzbar import decode
 import cv2
 import numpy as np
-from pyzbar.pyzbar import decode
 import makevcard
-from docxtpl import DocxTemplate
 import datetime
 import DB.database
+
+
+def draw(id, text):
+    image = Image.open('img/cate.png')
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.truetype('static/font/ofont.ru_Sriracha.ttf', size=100)
+    x, y = 100, 230
+    color = (255, 0, 0)
+    draw.text((x, y), text, fill=color, font=font)
+    image.save(f'{id}.png')
 
 
 def read_qr_code(image_path):
@@ -15,6 +26,7 @@ def read_qr_code(image_path):
         return decoded_objects[0].data.decode('utf-8')
     else:
         return None
+
 
 def get_calendar(month, number):
    pass
@@ -62,7 +74,3 @@ def get_data(id):
     }
     doc.render(dict)
     doc.save(f"references/save/{id}.docx")
-
-
-if __name__ == '__main__':
-    get_calendar('February', '2')

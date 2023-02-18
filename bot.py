@@ -28,10 +28,18 @@ def keyboards_create(ListNameBTN, NumberColumns=2):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    name = db.check_human(message.chat.id)
+    name = str(db.check_human(message.chat.id)[0]).split(' ')
+    surname = f'Привет, {name[1]} {name[2]}!'
+    pe = DB.database.People()
+    subdivision = pe.check('subdivision')
+    JOBTITLE = pe.check('JOBTITLE')
+    info = f'▶️Подразделение:{subdivision}\n▶️Должность:{JOBTITLE}'
     if name is not None:
-        bot.send_message(message.chat.id, f'Привет, {name[0]}!\n{tg.welcome_message}',
-            reply_markup=keyboards_create(tg.welcome_keyboard))
+        function.draw(message.chat.id, surname)
+        with open(f'{message.chat.id}.png', 'rb') as photo:
+            bot.send_photo(message.chat.id, photo, caption = f'{tg.welcome_message}\n{info}',
+                reply_markup=keyboards_create(tg.welcome_keyboard))
+        os.remove(f'{message.chat.id}.png')
     else:
         bot.send_message(message.chat.id, 'Нет доступа❗')
 
@@ -132,7 +140,7 @@ def callback_handler(call):
         button = types.InlineKeyboardButton(text="Открыть ссылку", url="https://www.example.com")
         Usefulmaterials = types.InlineKeyboardMarkup()
         Usefulmaterials.add(button)
-        bot.send_message(call.message.chat_id, "Нажмите кнопку, чтобы открыть ссылку", reply_markup=Usefulmaterials)
+        bot.send_message(call.message.chat.id, "Нажмите кнопку, чтобы открыть ссылку", reply_markup=Usefulmaterials)
     
     # дописать подписку
     elif data == 'subscribeivent':
