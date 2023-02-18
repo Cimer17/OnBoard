@@ -6,6 +6,7 @@ import content.TG as tg
 import function
 import os
 import random
+import time
 from telebot import types
 
 config = configparser.ConfigParser()
@@ -30,10 +31,13 @@ def keyboards_create(ListNameBTN, NumberColumns=2):
 def start(message):
     name = str(db.check_human(message.chat.id)[0]).split(' ')
     surname = f'Привет, {name[1]} {name[2]}!'
+    id = message.chat.id
     pe = DB.database.People()
-    subdivision = pe.check('subdivision')
-    JOBTITLE = pe.check('JOBTITLE')
-    info = f'▶️Подразделение:{subdivision}\n▶️Должность:{JOBTITLE}'
+    subdivision = pe.check('subdivision', id)
+    JOBTITLE = pe.check('JOBTITLE', id)
+    day = pe.check('date', id)
+    diff_days = round((time.time() - time.mktime(time.strptime(day, "%d-%m-%Y"))) / (60 * 60 * 24))
+    info = f'Информация о тебе:\nПодразделение:{subdivision}\nДолжность:{JOBTITLE}\nДней с нами: {diff_days}!'
     if name is not None:
         function.draw(message.chat.id, surname)
         with open(f'{message.chat.id}.png', 'rb') as photo:

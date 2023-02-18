@@ -1,6 +1,6 @@
 import sqlite3
 import random
-
+import time
 
 class Database:
     
@@ -31,7 +31,8 @@ class People(Database):
         self.JOBTITLE = JOBTITLE
         self.department = department
         self.new = 0
-        self.cursor.execute('INSERT INTO users VALUES (?, ?, ?, ?, ?, 0, 0);', [id, name, subdivision, JOBTITLE, department])
+        self.current_date = time.strftime("%d-%m-%Y")
+        self.cursor.execute('INSERT INTO users VALUES (?, ?, ?, ?, ?, 0, 0, ?);', [id, name, subdivision, JOBTITLE, department, self.current_date])
         self.conn.commit()
 
     def check(self, param : str, id): # получаем нужный параметр
