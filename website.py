@@ -1,6 +1,7 @@
-from flask import Flask, redirect, render_template, jsonify
+from flask import Flask, redirect, render_template, jsonify, request
 import DB.database
 import requests
+
 
 app = Flask(__name__)
 db = DB.database.Database()
@@ -13,14 +14,26 @@ def application():
 def hr():
     return render_template('application.html')
 
-"""@app.route('/checkpeople/<user>', methods=['GET'])
-def get_data(user):
-    data = db.all_human(user)
-    return data
-    result = []
-    #for row in data:
-       # result.append()
-    #return jsonify({'name': row[0], 'subdivision': row[1], 'department': row[2]})"""
+@app.route('/access')
+def access():
+    return render_template('access.html')
+
+
+# API
+@app.route('/grant-access', methods=['POST'])
+def grant_access():
+    chat_id = request.form['chat_id']
+    name = request.form['name']
+    subdivision = request.form['subdivision']
+    JOBTITLE = request.form['JOBTITLE']
+    department = request.form['department']
+    # Здесь можно выполнить логику выдачи доступа к боту для указанного чата
+    db = DB.database.People()
+    db.create(chat_id, name, subdivision, JOBTITLE, department)
+    db.close()
+    return f'Доступ выдан {chat_id}!'
+
+
 
 @app.route('/submit', methods=['POST'])
 def submit_handler():
