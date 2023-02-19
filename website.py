@@ -32,6 +32,7 @@ def grant_access():
     db.close()
     return render_template('accessright.html')
 
+
 @app.route('/submit', methods=['POST'])
 def submit_handler():
     choice = requests.form['choice']
