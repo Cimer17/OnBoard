@@ -7,17 +7,17 @@ import function
 import os
 import random
 import time
+
 from telebot import types
+
 
 config = configparser.ConfigParser()
 config.read("settings.ini")
 tokenBot = config["bot"]["bot_token"]
+id_support = config["bot"]["id_support"]
 
 db = DB.database.Database()
 bot = telebot.TeleBot(tokenBot)
-
-
-id_support = '-666276498'  # тут автоматический чат с главным и поддержкой
 
 def keyboards_create(ListNameBTN, NumberColumns=2):
     keyboards = types.ReplyKeyboardMarkup(
@@ -33,19 +33,55 @@ def start(message):
     surname = f'Привет, {name[1]} {name[2]}!'
     id = message.chat.id
     pe = DB.database.People()
+    ach = DB.database.Achievements()
     subdivision = pe.check('subdivision', id)
     JOBTITLE = pe.check('JOBTITLE', id)
     day = pe.check('date', id)
+    list_people  = ach.check_id_list('print')
+    list_people = eval(list_people)
     diff_days = round((time.time() - time.mktime(time.strptime(day, "%d-%m-%Y"))) / (60 * 60 * 24))
-    info = f'Информация о тебе:\nПодразделение:{subdivision}\nДолжность:{JOBTITLE}\nДней с нами: {diff_days}!'
+    pe.close()
+    ach.close()
+    info = f'Информация о тебе:\nПодразделение: {subdivision}\nДолжность: {JOBTITLE}\nДней с нами: {diff_days}!'
     if name is not None:
         function.draw(message.chat.id, surname)
-        with open(f'{message.chat.id}.png', 'rb') as photo:
-            bot.send_photo(message.chat.id, photo, caption = f'{tg.welcome_message}\n{info}',
-                reply_markup=keyboards_create(tg.welcome_keyboard))
+        if id in list_people:
+            with open(f'{message.chat.id}.png', 'rb') as photo:
+                bot.send_photo(message.chat.id, photo, caption = f'{tg.welcome_message}\n{info}',
+                    reply_markup=keyboards_create(tg.welcome_keyboard_print))
+        else:
+            with open(f'{message.chat.id}.png', 'rb') as photo:
+                bot.send_photo(message.chat.id, photo, caption = f'{tg.welcome_message}\n{info}',
+                    reply_markup=keyboards_create(tg.welcome_keyboard))
         os.remove(f'{message.chat.id}.png')
     else:
         bot.send_message(message.chat.id, 'Нет доступа❗')
+
+
+@bot.message_handler(func = lambda m : m.text == '🖨️Принтер')
+def my_achievements(message):
+    msg = bot.send_message(message.chat.id, 'Закиньте файл для печати')
+    bot.register_next_step_handler(msg, event_print)
+
+
+def event_print(message):
+    if message.document:
+        file_info = bot.get_file(message.document.file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+        file_name = message.document.file_name
+        save_path = os.path.join(os.getcwd(), file_name)
+        with open(save_path, 'wb') as f:
+            f.write(downloaded_file)
+        name, extension = os.path.splitext(file_name)
+        if extension in ['.txt', '.doc', '.docx', '.pdf']:
+            function.printhp(file_name)
+            time.sleep(3)
+            os.remove(file_name)
+        else:
+            bot.send_message(message.chat.id, 'Поддерживаемые форматы: txt, doc, docx, pdf')
+            os.remove(file_name)
+    else:
+        bot.send_message(message.chat.id, 'Это не файл!\nЗакиньте, пожалуйста, в виде файла.')
 
 
 @bot.message_handler(func = lambda m : m.text == '✔️Мои достижения')
@@ -87,10 +123,8 @@ def calendarday(message, btn, event):
         keyboard = types.InlineKeyboardMarkup()
         keyboard.add(subscribe)
         bot.send_message(message.chat.id, f'Событие - {event[0][1]} \n📌{event[0][2]}', reply_markup=keyboard)
-        start(message)
     else:
         bot.send_message(message.chat.id, f'Событий на эту дату нет!', reply_markup=types.ReplyKeyboardRemove())
-        start(message)
 
 @bot.message_handler(func = lambda m : m.text == '📂Навигатор')
 def navigator(message):
@@ -104,30 +138,38 @@ def navigator(message):
 
 @bot.message_handler(func = lambda m : m.text == '👤Задать вопрос')
 def askQuestion(message):
-    msg = bot.send_message(message.chat.id, 'Не стесняйся задать вопрос, ответим в билжэайщее время!\n\
+    bot.send_message(message.chat.id, 'Не стесняйся задать вопрос, ответим в ближайщее время!\n\
 Введи свой вопрос:')
-    bot.register_next_step_handler(msg, send_Question)
+    @bot.message_handler(func=lambda m: True)
+    def handle_message(message):
+        if message.text == 'меню':
+            bot.send_message(message.chat.id, 'Меню:', reply_markup=keyboards_create(tg.welcome_keyboard))
+        answer = None
+        for template, response in tg.templates.items():
+            if template in message.text.lower():
+                answer = response
+                break
+        if answer:
+            bot.send_message(message.chat.id, answer)
+        else:
+            people = DB.database.People()
+            id = message.from_user.id
+            name = people.check('name', id)[0]
+            subdivision = people.check('subdivision', id)[0]
+            department = people.check('department', id)[0]
+            people.close()
+            # формируем тикет
+            tiket = DB.database.Ticket()
+            idtiket = tiket.new_tikket(message.text, message.from_user.id)
+            tiket.close()
+            # отправляем
+            ok = types.InlineKeyboardButton("🟥Взять в обработку", callback_data="takeTicket")
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.add(ok)
+            bot.send_message(id_support, f'Обращение от: {name} \nПодразделение: {subdivision}\nОтдел :{department}\nНомер:{idtiket}\nВопрос: {message.text}',
+            reply_markup=keyboard)
+            bot.send_message(message.chat.id, 'Не могу ответить на вопрос, отправила его человеку, ответ прийдет в ближайщее время!')
 
-
-def send_Question(message):
-    # подбираем данные
-    people = DB.database.People()
-    id = message.from_user.id
-    name = people.check('name', id)[0]
-    subdivision = people.check('subdivision', id)[0]
-    department = people.check('department', id)[0]
-    people.close()
-    # формируем тикет
-    tiket = DB.database.Ticket()
-    idtiket = tiket.new_tikket(message.text, message.from_user.id)
-    tiket.close()
-    # отправляем
-    ok = types.InlineKeyboardButton("🟥Взять в обработку", callback_data="takeTicket")
-    keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(ok)
-    bot.send_message(id_support, f'Обращение от: {name} \nПодразделение: {subdivision}\nОтдел :{department}\nНомер:{idtiket}\nВопрос: {message.text}',
-    reply_markup=keyboard)
-    bot.send_message(message.chat.id, 'Ваше обращение отправлено, дождитесь ответа!')
 
 """ доработать """
 @bot.callback_query_handler(func=lambda call: True)
@@ -194,7 +236,7 @@ def callback_handler(call):
         new_markup.add(new_button)
         bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=new_markup)
         with open(f'references/save/{call.message.chat.id}.docx', 'rb') as f:
-            bot.send_document(call.message.chat.id, document=f)
+            bot.send_document(call.message.chat.id, document=f, caption='Теперь осталось отнести справку в бухгалтерию\nЯ подскажу, где это: 2 этаж кабинет 22')
 
     elif data == 'menu':
         start(call.message)
@@ -228,6 +270,8 @@ def handle_photo(message):
         description = ac.check_code(code)
         if description:
             ac.update_activate(message.from_user.id, code)
+            if code == 'print':
+                function.printhp('roadmap.docx')
             mes = random.choice(['Продолжай в том же духе', 'Всё получится!', 'Молодец!'])
             bot.send_message(message.chat.id, f'Новое достижение! \n{description[0]}\nПоздравляю!\n{mes}')
             ac.close()

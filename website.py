@@ -32,6 +32,7 @@ def grant_access():
     db.close()
     return render_template('accessright.html')
 
+<<<<<<< HEAD
 @app.route('/difi')
 def difi():
     return render_template("experiment.html")
@@ -40,6 +41,14 @@ def difi():
 #     choice = request.form['choice']
 #     if choice == 'page1':
 #         return render_template('experiment.html')
+=======
+
+@app.route('/submit', methods=['POST'])
+def submit_handler():
+    choice = requests.form['choice']
+    if choice == 'page1':
+        return redirect('/page1')
+>>>>>>> d69551365bd7edc8dd483fba97b460e6c7c2957f
 
 
 if __name__ == '__main__':

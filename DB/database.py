@@ -87,6 +87,10 @@ class Achievements:
         self.cursor.execute("SELECT * FROM achievements WHERE state=?", (state))
         return self.cursor.fetchall()
 
+    def check_id_list(self, code):
+        self.cursor.execute("SELECT id_list FROM achievements WHERE code=?", (code,))
+        return self.cursor.fetchone()[0]
+    
     def close(self):
         self.conn.close()
     

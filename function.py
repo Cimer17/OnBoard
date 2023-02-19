@@ -8,6 +8,23 @@ import datetime
 import DB.database
 
 
+def printhp(file):
+    import os
+    os.startfile(file, "print")
+
+
+# настраиваемое через сокет
+"""def _printhp(filename):
+    import socket
+    printer_ip = "192.168.0.110"
+    printer_port = 9100
+    with open(filename, "rb") as f:
+        content = f.read()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((printer_ip, printer_port))
+    sock.sendall(content)
+    sock.close()"""
+
 def draw(id, text):
     image = Image.open('img/cate.png')
     draw = ImageDraw.Draw(image)
