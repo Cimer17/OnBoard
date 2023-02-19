@@ -32,12 +32,15 @@ def grant_access():
     db.close()
     return render_template('accessright.html')
 
-@app.route('/submit', methods=['POST'])
-def submit_handler():
-    choice = requests.form['choice']
-    if choice == 'page1':
-        return redirect('/page1')
+@app.route('/difi')
+def difi():
+    return render_template("experiment.html")
+# @app.route('/submit_handler', methods=['POST'])
+# def submit_handler():
+#     choice = request.form['choice']
+#     if choice == 'page1':
+#         return render_template('experiment.html')
 
 
 if __name__ == '__main__':
-    target=app.run()
+    app.run()
