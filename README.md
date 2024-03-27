@@ -1,4 +1,6 @@
 # OnBoard
+Демонстрация проекта:
+https://disk.yandex.ru/i/A7UBLbtHIO_Kag
 
 #### Реализованная функциональность:
 
