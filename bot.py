@@ -7,14 +7,14 @@ import function
 import os
 import random
 import time
-
 from telebot import types
+from environs import Env
 
+env = Env()  
+env.read_env()
 
-config = configparser.ConfigParser()
-config.read("settings.ini")
-tokenBot = config["bot"]["bot_token"]
-id_support = config["bot"]["id_support"]
+tokenBot = env('BOT_TOKEN')
+id_support = env('ID_SUPPORT')
 
 db = DB.database.Database()
 bot = telebot.TeleBot(tokenBot)
