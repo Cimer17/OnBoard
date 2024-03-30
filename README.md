@@ -1,3 +1,4 @@
+![Иллюстрация к проекту](https://github.com/Cimer17/OnBoard/blob/master/src/title.png)
 # OnBoard
 Демонстрация проекта:
 https://disk.yandex.ru/i/A7UBLbtHIO_Kag
