@@ -57,13 +57,21 @@ def start(message):
     else:
         bot.send_message(message.chat.id, 'Нет доступа❗')
 
-
-@bot.message_handler(func = lambda m : m.text == '🖨️Принтер')
-def my_achievements(message):
-    msg = bot.send_message(message.chat.id, 'Закиньте файл для печати')
-    bot.register_next_step_handler(msg, event_print)
-
-
+@bot.message_handler(content_types=['text'])
+def text_message(message):
+    match message.text:
+        case '🖨️Принтер':
+            msg = bot.send_message(message.chat.id, 'Закиньте файл для печати')
+            bot.register_next_step_handler(msg, event_print)
+        case '✔️Мои достижения':
+            my_achievements(message)
+        case '📅Календарь событий':
+            сalendar(message)
+        case '📂Навигатор':
+            navigator(message)
+        case '👤Задать вопрос':
+            askQuestion(message)
+            
 def event_print(message):
     if message.document:
         file_info = bot.get_file(message.document.file_id)
@@ -83,8 +91,6 @@ def event_print(message):
     else:
         bot.send_message(message.chat.id, 'Это не файл!\nЗакиньте, пожалуйста, в виде файла.')
 
-
-@bot.message_handler(func = lambda m : m.text == '✔️Мои достижения')
 def my_achievements(message):
     id = str(message.chat.id)
     ac = DB.database.Achievements()
@@ -101,8 +107,6 @@ def my_achievements(message):
     else:
         bot.send_message(message.chat.id, 'Вы всё прошли!')
             
-
-@bot.message_handler(func = lambda m : m.text == '📅Календарь событий')
 def сalendar(message):
     kl = DB.database.Callendar()
     event = kl.get_date()
@@ -126,7 +130,6 @@ def calendarday(message, btn, event):
     else:
         bot.send_message(message.chat.id, f'Событий на эту дату нет!', reply_markup=types.ReplyKeyboardRemove())
 
-@bot.message_handler(func = lambda m : m.text == '📂Навигатор')
 def navigator(message):
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton(text='Полезные материалы', callback_data='Usefulmaterials'),
@@ -135,8 +138,6 @@ def navigator(message):
            types.InlineKeyboardButton(text='Меню', callback_data='menu'),)
     bot.send_message(message.chat.id, 'Навигатор:', reply_markup=markup)
 
-
-@bot.message_handler(func = lambda m : m.text == '👤Задать вопрос')
 def askQuestion(message):
     bot.send_message(message.chat.id, 'Не стесняйся задать вопрос, ответим в ближайщее время!\n\
 Введи свой вопрос:')
